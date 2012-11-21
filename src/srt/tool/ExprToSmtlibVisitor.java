@@ -57,6 +57,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 			case BinaryExpr.NEQUAL:
 				break;
 			case BinaryExpr.EQUAL:
+				operator = "(= %s %s)";
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid binary operator");
@@ -68,12 +69,12 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 
 	@Override
 	public String visit(DeclRef declRef) {
-		return null;
+		return declRef.getName();
 	}
 
 	@Override
 	public String visit(IntLiteral intLiteral) {
-		return null;
+		return Integer.toString(intLiteral.getValue());
 	}
 
 	@Override

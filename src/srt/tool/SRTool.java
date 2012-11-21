@@ -74,7 +74,7 @@ public class SRTool {
 			return result;
 		}
 
-		// TODO: Convert constraints to SMTLIB String.
+		// TODO: Section 4: Convert constraints to SMTLIB String.
 		SMTLIBConverter converter = new SMTLIBConverter(ccv.variableNames,
 				ccv.transitionExprs, ccv.propertyExprs);
 		String smtQuery = converter.getQuery();
