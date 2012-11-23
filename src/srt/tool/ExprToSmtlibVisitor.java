@@ -74,7 +74,8 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 
 	@Override
 	public String visit(IntLiteral intLiteral) {
-		return Integer.toString(intLiteral.getValue());
+		return "(_ bv"+Integer.toString(intLiteral.getValue())+" 32)";
+		//return "(inttobv32 "+Integer.toString(intLiteral.getValue())+")";
 	}
 
 	@Override

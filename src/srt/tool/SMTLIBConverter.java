@@ -23,7 +23,9 @@ public class SMTLIBConverter {
 		
 		exprConverter = new ExprToSmtlibVisitor();
 		query = new StringBuilder("(set-logic QF_BV)\n" +
+				"(declare-sort Int 0)\n"+
 				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
+				//"(define-fun inttobv32 ((i Int))  (_ BitVec 32) (_ bv 32))\n");
 		// TODO: Define more functions above (for convenience), as needed.
 
 		// TODO: Add constraints, add properties to check
@@ -37,15 +39,13 @@ public class SMTLIBConverter {
 		
 		// Add constraints
 		for (Expr e : transitionExprs) {
-			String line = exprConverter.visit(e) + "\n";
+			String line = "(assert "+exprConverter.visit(e) + ")\n";
 			query.append(line);
 		}
 		
-		// Add properties to check
-		for (Expr e : propertyExprs) {
-			String line = exprConverter.visit(e) + "\n";
-			query.append(line);
-		}
+		// what if no properties?
+		String line = "(assert (not "+buildPropertyFormula(propertyExprs)+"))\n";
+		query.append(line);
 		
 		query.append("(check-sat)\n");
 		System.out.println(query.toString());
@@ -59,6 +59,17 @@ public class SMTLIBConverter {
 		List<Integer> res = new ArrayList<Integer>();
 		
 		return res;
+	}
+	
+	private String buildPropertyFormula(List<Expr> expressions) {
+		StringBuilder formula = new StringBuilder();
+		if (expressions.isEmpty()) {
+			return "";
+		}
+		Expr expression = expressions.remove(0);
+		String e = exprConverter.visit(expression);
+		formula.append("(and ").append(e).append(" ").append(buildPropertyFormula(expressions)).append(")");
+		return formula.toString();
 	}
 	
 }
