@@ -40,14 +40,14 @@ public class SMTLIBConverter {
 		
 		// Add constraints
 		for (Expr e : transitionExprs) {
-			String line = "(assert "+exprConverter.visit(e) + ")\n";
+			String line = "(assert (bv32tobool "+exprConverter.visit(e) + "))\n";
 			query.append(line);
 		}
 		
-		// what if no properties?
+		// Check that one of the assertion properties can fail
+		// TODO what if no properties?
 		String line = "(assert (not "+buildPropertyFormula(propertyExprs)+"))\n";
 		query.append(line);
-		
 		query.append("(check-sat)\n");
 		System.out.println(query.toString());
 	}
@@ -63,14 +63,13 @@ public class SMTLIBConverter {
 	}
 	
 	private String buildPropertyFormula(List<Expr> expressions) {
-		StringBuilder formula = new StringBuilder();
 		if (expressions.isEmpty()) {
 			return "";
 		}
+		String result = "(and (bv32tobool %s) %s)";
 		Expr expression = expressions.remove(0);
 		String e = exprConverter.visit(expression);
-		formula.append("(and ").append(e).append(" ").append(buildPropertyFormula(expressions)).append(")");
-		return formula.toString();
+		return String.format(result, e, buildPropertyFormula(expressions));
 	}
 	
 }
