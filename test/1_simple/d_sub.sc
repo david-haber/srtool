@@ -1,9 +1,8 @@
 
 void main(int i, int j)
 {
-	i=1+9;
-	j=2+8;
+	i=9-4;
+	j=2+3;
 	
 	assert(i == j);
-	assert(1 == 1);
 }

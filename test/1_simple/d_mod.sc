@@ -1,9 +1,8 @@
 
 void main(int i, int j)
 {
-	i=1+9;
-	j=2+8;
+	i=73%36;
+	j=1;
 	
 	assert(i == j);
-	assert(1 == 1);
 }
