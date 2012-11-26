@@ -7,6 +7,7 @@ import java.util.List;
 import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.tree.Tree;
 
+import srt.ast.Node;
 import srt.ast.Program;
 import srt.ast.visitor.impl.Checker;
 import srt.ast.visitor.impl.MakeBlockVisitor;
@@ -95,8 +96,14 @@ public class SRTool {
 			// TODO: Use "indexesFailed" after implementing
 			// "getPropertiesThatFailed".
 			// For now:
-
-			result.add(new AssertionFailure(null));
+			for (Integer i : indexesFailed) {
+				Node exp = ccv.propertyNodes.get(i);
+				if (exp != null && exp.getTokenInfo() != null) {
+					result.add(new AssertionFailure(exp.getTokenInfo()));
+				}
+			}
+			
+			if (indexesFailed.isEmpty()) result.add(new AssertionFailure(null));
 
 		} else if (!queryResult.startsWith("unsat")) {
 			throw new UnknownResultException();

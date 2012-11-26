@@ -1,6 +1,7 @@
 package srt.tool;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -45,9 +46,13 @@ public class SMTLIBConverter {
 		
 		// Check that one of the assertion properties can fail
 		// TODO what if no properties?
-		String line = "(assert (not "+buildPropertyFormula(propertyExprs)+"))\n";
-		query.append(line);
+		
+		query.append(buildProperties(propertyExprs));
+		
 		query.append("(check-sat)\n");
+		
+		query.append(buildGetValues(propertyExprs));
+		
 		System.out.println(query.toString());
 	}
 
@@ -55,20 +60,109 @@ public class SMTLIBConverter {
 		return query.toString();
 	}
 	
+	/**
+	 * 
+	 * @param queryResult
+	 * 
+	 * @return a list of integers such that if i belongs to this list then 
+	 * the ith Expr in propertyExprs list that was passed into the constructor
+	 * is the guard of an assertion that may fail
+	 */
 	public List<Integer> getPropertiesThatFailed(String queryResult) {
 		List<Integer> res = new ArrayList<Integer>();
+		
+		// keep track of property number
+		int i = 0;
+		
+		// remove 'sat' line
+		String rest = queryResult.substring(queryResult.indexOf("sat\n")+4);
+
+		// find end of first line
+		int endOfLine = rest.indexOf('\n');
+		
+		while (endOfLine >= 0) {
+			
+			// get current line
+			String line = rest.substring(0, endOfLine);
+			
+			// if this property may fail (==true), add it to list
+			if (line.contains("true")) {
+				res.add(i);
+			}
+			i++;
+			
+			// remove current line from string
+			rest = rest.substring(endOfLine+1);
+			
+			// get end of next line
+			endOfLine = rest.indexOf('\n');
+		}
+		
+//		int i = 0;
+//		int pos = queryResult.lastIndexOf("prop" + i);
+//		while (pos >= 0) {
+//			
+//			char c = queryResult.charAt(pos + 6); // TODO bad! only works if less than 10 assertions
+//			if (c == 't') {
+//				res.add(i);
+//			}
+//			
+//			// get next prop
+//			i++;
+//			pos = queryResult.lastIndexOf("prop" + i);
+//		}
 		
 		return res;
 	}
 	
-	private String buildPropertyFormula(List<Expr> expressions) {
-		if (expressions.isEmpty()) {
-			return "";
+	/**
+	 * 
+	 * @param propertyExprs
+	 * @return a string declaring and specifying the assertions in SMT-LIB format
+	 * for given propertyExprs
+	 */
+	private String buildProperties(List<Expr> propertyExprs) {
+		String props = "";
+		for (int i=0; i < propertyExprs.size(); i++) {
+			props += "(declare-fun prop" + i + " () (Bool))\n";
 		}
-		String result = "(and (bv32tobool %s) %s)";
-		Expr expression = expressions.remove(0);
-		String e = exprConverter.visit(expression);
-		return String.format(result, e, buildPropertyFormula(expressions));
+		
+		for (int i=0; i < propertyExprs.size(); i++) {
+			props += "(assert  (= prop" + i + " (not (bv32tobool " + 
+					exprConverter.visit(propertyExprs.get(i)) +"))))\n";
+		}
+		
+		
+		props += "(assert (or ";
+		for (int i=0; i < propertyExprs.size(); i++) {
+			props += "prop" + i + " ";	
+		}
+		props = props.trim() + ("))\n"); // performance
+		
+		return props;
+
 	}
+	
+	/**
+	 * 
+	 * @param propertyExprs
+	 * 
+	 * @return a string of the form (get-value (prop0 prop1 ... propN) where
+	 * N+1 is the number of propertyExprs given
+	 */
+	private String buildGetValues(List<Expr> propertyExprs) {
+		String line = "";
+		if (!propertyExprs.isEmpty()) {
+			line = "(get-value (";
+			for (int i=0; i < propertyExprs.size(); i++) {
+				line += "prop"+i+" ";
+			}
+			
+			line = line.trim() + "))\n"; // not really cool for performance, looks nicer though
+		}
+		return line;
+	}
+	
+	
 	
 }
