@@ -24,7 +24,6 @@ public class SSAVisitor extends DefaultVisitor {
 	
 	private void incrementSSAIndex(String name) {
 		Integer oldI = index.get(name);
-		
 		index.put(name, oldI+1);
 	}
 	

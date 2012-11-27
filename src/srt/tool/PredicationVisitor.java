@@ -5,6 +5,7 @@ import srt.ast.AssignStmt;
 import srt.ast.AssumeStmt;
 import srt.ast.BinaryExpr;
 import srt.ast.BlockStmt;
+import srt.ast.Decl;
 import srt.ast.DeclRef;
 import srt.ast.Expr;
 import srt.ast.HavocStmt;
@@ -19,10 +20,25 @@ public class PredicationVisitor extends DefaultVisitor {
 	private String freshVariableSeed;
 
 	private DeclRef parentPredicate;
+	
+	private DeclRef globalPredicate;
+	private final String globalPredicateName;
+	private int globalPredicateNumber;
 
 	public PredicationVisitor() {
 		super(true);
-		freshVariableSeed = "$A";
+		globalPredicate = new DeclRef("$G");
+		freshVariableSeed = "B";
+		globalPredicateName = "$A";
+		globalPredicateNumber = 0;
+	}
+	
+	private void updateGlobalVariable() {
+		globalPredicateNumber += 1;
+	}
+	
+	private String getCurrentGlobalVariable() {
+		return globalPredicateName + String.valueOf(globalPredicateNumber);
 	}
 
 	/**
@@ -30,8 +46,8 @@ public class PredicationVisitor extends DefaultVisitor {
 	 * 
 	 * @return a fresh variable that has not been used before
 	 */
-	private String getFreshVariable() {
-		String result = freshVariableSeed;
+	private String getFreshVariable(boolean isPredicate) {
+		String result = (isPredicate) ? "$"+ freshVariableSeed : freshVariableSeed;
 		if (freshVariableSeed.charAt(freshVariableSeed.length()-1) == 'Z') {
 			freshVariableSeed.concat("A");
 		} else {
@@ -48,7 +64,7 @@ public class PredicationVisitor extends DefaultVisitor {
 		BlockStmt stmts;
 		Expr rhs;
 
-		DeclRef newPredicate = new DeclRef(getFreshVariable());
+		DeclRef newPredicate = new DeclRef(getFreshVariable(true));
 
 		if (parentPredicate == null) {
 			rhs = ifStmt.getCondition();
@@ -68,7 +84,7 @@ public class PredicationVisitor extends DefaultVisitor {
 			// Create predicate with negated if-condition
 
 			parentPredicate = oldParentPredicate;
-			newPredicate = new DeclRef(getFreshVariable());
+			newPredicate = new DeclRef(getFreshVariable(true));
 			if (parentPredicate == null) {
 				rhs = new UnaryExpr(UnaryExpr.LNOT, ifStmt.getCondition());
 			} else {
@@ -91,27 +107,69 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssertStmt assertStmt) {
-		return super.visit(assertStmt);
+		Expr rhs = assertStmt.getCondition();
+		Expr lhs;
+		if (parentPredicate != null) {
+			lhs = new UnaryExpr(UnaryExpr.LNOT, new BinaryExpr(BinaryExpr.LAND, globalPredicate, parentPredicate));
+		} else {
+			lhs = new UnaryExpr(UnaryExpr.LNOT, globalPredicate);
+		}
+		return new AssertStmt(new BinaryExpr(BinaryExpr.LOR, lhs, rhs), assertStmt);
 	}
 
 	@Override
 	public Object visit(AssignStmt assignment) {
+		// Build Ternary Predicate
+		Expr condition;
 		if (parentPredicate != null) {
-			Expr e = new TernaryExpr(parentPredicate, assignment.getRhs(), assignment.getLhs());
-			return new AssignStmt(assignment.getLhs(), e);
+			condition = new BinaryExpr(BinaryExpr.LAND, globalPredicate, parentPredicate);
 		} else {
-			return super.visit(assignment);	
+			condition = globalPredicate;
 		}
+		Expr e = new TernaryExpr(condition, assignment.getRhs(), assignment.getLhs());
+		return new AssignStmt(assignment.getLhs(), e);
+		//return super.visit(assignment);
 	}
 
 	@Override
 	public Object visit(AssumeStmt assumeStmt) {
+		DeclRef freshVar = new DeclRef(getFreshVariable(true));
+		Expr assignment;
+		Expr lhs;
+		if (parentPredicate != null) {
+			lhs = new UnaryExpr(UnaryExpr.LNOT, new BinaryExpr(BinaryExpr.LAND, globalPredicate, parentPredicate));
+		} else {
+			lhs = new UnaryExpr(UnaryExpr.LNOT, globalPredicate);
+		}
+		Expr rhs = assumeStmt.getCondition();
+		assignment = new BinaryExpr(BinaryExpr.LOR, lhs, rhs);
+		Stmt newStatement = new AssignStmt(freshVar, assignment);
+		// New action on G
+		Stmt newG = new AssignStmt(globalPredicate, new BinaryExpr(BinaryExpr.LAND, globalPredicate, freshVar));
+		BlockStmt stmts = new BlockStmt(new Stmt[] { newStatement, newG},
+				/* basedOn= */assumeStmt);
+		//return stmts;
 		return super.visit(assumeStmt);
+
 	}
 
 	@Override
 	public Object visit(HavocStmt havocStmt) {
-		return super.visit(havocStmt);
+		DeclRef x = havocStmt.getVariable();
+		Expr condition, lhs, rhs;
+		if (parentPredicate != null) {
+			condition = new BinaryExpr(BinaryExpr.LAND, globalPredicate, parentPredicate);
+		} else {
+			condition = globalPredicate;
+		}
+		String newDeclRef = getFreshVariable(false);
+		lhs = new DeclRef(newDeclRef);
+		rhs = x;
+		Stmt s = new Decl(newDeclRef, "int");
+		Stmt e = new AssignStmt(x, new TernaryExpr(condition, lhs, rhs), havocStmt);
+		BlockStmt stmts = new BlockStmt(new Stmt[] { s, e},
+				/* basedOn= */havocStmt);
+		return stmts;
 	}
 
 }
