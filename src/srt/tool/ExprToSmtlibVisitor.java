@@ -75,7 +75,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(tobv32 (bvslt %s %s))";
 				break;
 			case BinaryExpr.NEQUAL:
-				operator = "(tobv32 (not (bvslt %s %s)))";
+				operator = "(tobv32 (not (= %s %s)))";
 				break;
 			case BinaryExpr.EQUAL:
 				operator = "(tobv32 (= %s %s))";
