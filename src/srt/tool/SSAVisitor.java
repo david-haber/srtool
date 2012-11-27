@@ -24,6 +24,7 @@ public class SSAVisitor extends DefaultVisitor {
 	
 	private void incrementSSAIndex(String name) {
 		Integer oldI = index.get(name);
+		
 		index.put(name, oldI+1);
 	}
 	
@@ -31,21 +32,26 @@ public class SSAVisitor extends DefaultVisitor {
 	public Object visit(Decl decl) {
 		String name = decl.getName();
 		index.put(name, 0);
-		//TODO COULD BE WRONG
 		return super.visit(new Decl(getSSAName(name), decl.getType(), decl));
 	}
 	
 	@Override
 	public Object visit(DeclRef declRef) {
-		String name = getSSAName(declRef.getName());
-		return super.visit(new DeclRef(name, declRef));
+		String name = declRef.getName();
+		if (name.charAt(0) == '$') {
+			return declRef;
+		} else {
+			return new DeclRef(getSSAName(name), declRef);
+		}
 	}
 	
 	@Override
 	public Object visit(AssignStmt assignment) {
 		Expr rhs = (Expr) this.visit(assignment.getRhs());
 		String oldName = assignment.getLhs().getName();
-		incrementSSAIndex(oldName);
+		if (oldName.charAt(0) != '$') {
+			incrementSSAIndex(oldName);
+		}
 		DeclRef lhs = (DeclRef) this.visit(assignment.getLhs());
 		return new AssignStmt(lhs,rhs,assignment);
 		//return super.visit(new AssignStmt(lhs,rhs,assignment));

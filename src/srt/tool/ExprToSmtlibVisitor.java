@@ -101,7 +101,11 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 
 	@Override
 	public String visit(TernaryExpr ternaryExpr) {
-		return null;
+	
+		String ret = "(ite (bv32tobool %s) %s %s)";
+		
+		return String.format(ret, visit(ternaryExpr.getCondition()), 
+				visit(ternaryExpr.getTrueExpr()), visit(ternaryExpr.getFalseExpr()));
 	}
 
 	@Override
