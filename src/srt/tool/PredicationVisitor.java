@@ -63,11 +63,10 @@ public class PredicationVisitor extends DefaultVisitor {
 		// Process everything in the IF body with the current predicate set to the fresh variable
 		Stmt thenStmt = (Stmt) visit(ifStmt.getThenStmt());
 
-		
 		// If there is an else statement
 		if (ifStmt.getElseStmt() != null) {
 			// Create predicate with negated if-condition
-			
+
 			parentPredicate = oldParentPredicate;
 			newPredicate = new DeclRef(getFreshVariable());
 			if (parentPredicate == null) {
@@ -97,8 +96,12 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(AssignStmt assignment) {
-		Expr e = new TernaryExpr(parentPredicate, assignment.getRhs(), assignment.getLhs());
-		return new AssignStmt(assignment.getLhs(), e);
+		if (parentPredicate != null) {
+			Expr e = new TernaryExpr(parentPredicate, assignment.getRhs(), assignment.getLhs());
+			return new AssignStmt(assignment.getLhs(), e);
+		} else {
+			return super.visit(assignment);	
+		}
 	}
 
 	@Override
