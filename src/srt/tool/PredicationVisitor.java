@@ -155,18 +155,22 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(HavocStmt havocStmt) {
+		
 		DeclRef x = havocStmt.getVariable();
-		Expr condition, lhs, rhs;
+		Expr condition;
+		Expr havocedVar;
+		String newDeclRef = getFreshVariable(false);
+		
+		// Check global and parent predicate
 		if (parentPredicate != null) {
 			condition = new BinaryExpr(BinaryExpr.LAND, globalPredicate, parentPredicate);
 		} else {
 			condition = globalPredicate;
 		}
-		String newDeclRef = getFreshVariable(false);
-		lhs = new DeclRef(newDeclRef);
-		rhs = x;
+
+		havocedVar = new DeclRef(newDeclRef);
 		Stmt s = new Decl(newDeclRef, "int");
-		Stmt e = new AssignStmt(x, new TernaryExpr(condition, lhs, rhs), havocStmt);
+		Stmt e = new AssignStmt(x, new TernaryExpr(condition, havocedVar, x), havocStmt);
 		BlockStmt stmts = new BlockStmt(new Stmt[] { s, e},
 				/* basedOn= */havocStmt);
 		return stmts;

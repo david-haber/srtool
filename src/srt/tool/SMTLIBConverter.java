@@ -1,7 +1,6 @@
 package srt.tool;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -45,7 +44,6 @@ public class SMTLIBConverter {
 		}
 		
 		// Check that one of the assertion properties can fail
-		// TODO what if no properties?
 		
 		query.append(buildProperties(propertyExprs));
 		
@@ -97,20 +95,6 @@ public class SMTLIBConverter {
 			// get end of next line
 			endOfLine = rest.indexOf('\n');
 		}
-		
-//		int i = 0;
-//		int pos = queryResult.lastIndexOf("prop" + i);
-//		while (pos >= 0) {
-//			
-//			char c = queryResult.charAt(pos + 6); // TODO bad! only works if less than 10 assertions
-//			if (c == 't') {
-//				res.add(i);
-//			}
-//			
-//			// get next prop
-//			i++;
-//			pos = queryResult.lastIndexOf("prop" + i);
-//		}
 		
 		return res;
 	}

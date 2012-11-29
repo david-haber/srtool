@@ -54,7 +54,6 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		ifStmtBody.add((Stmt) visit(innerStmt));
 		stmts.add(new IfStmt(condition, new BlockStmt(ifStmtBody), new EmptyStmt()));
 		return new BlockStmt(stmts);
-		//return super.visit(whileStmt);
 	}
 
 }
