@@ -57,8 +57,11 @@ public class PredicationVisitor extends DefaultVisitor {
 	public Object visit(IfStmt ifStmt) {
 		List<Stmt> stmts = new LinkedList<Stmt>();
 		Expr rhs;
-		// Process IF-part of statement
-		DeclRef predQ = new DeclRef(getFreshVariable(true));
+		boolean hasElse = ifStmt.getElseStmt() != null;		
+		DeclRef predQ, predR = null;
+		
+		// Build Q
+		predQ = new DeclRef(getFreshVariable(true));
 		if (parentPredicate == null) {
 			rhs = ifStmt.getCondition();
 		} else {
@@ -67,17 +70,9 @@ public class PredicationVisitor extends DefaultVisitor {
 		AssignStmt predicateIfAssignStmt = new AssignStmt(predQ, rhs);
 		stmts.add(predicateIfAssignStmt);
 		
-		// Process everything in the IF body with the current predicate set to the fresh variable
-		DeclRef oldParentPredicate = parentPredicate;
-		parentPredicate = predQ;
-		Stmt thenStmt = (Stmt) visit(ifStmt.getThenStmt());
-		stmts.add(thenStmt);
-		
-		// Process ELSE-part of statement
-		if (ifStmt.getElseStmt() != null) {
-			// Create predicate with negated if-condition
-			parentPredicate = oldParentPredicate;
-			DeclRef predR = new DeclRef(getFreshVariable(true));
+		// Build R
+		if (hasElse) {
+			predR = new DeclRef(getFreshVariable(true));
 			if (parentPredicate == null) {
 				rhs = new UnaryExpr(UnaryExpr.LNOT, ifStmt.getCondition());
 			} else {
@@ -85,8 +80,17 @@ public class PredicationVisitor extends DefaultVisitor {
 			}
 			AssignStmt predicateElseAssignStmt = new AssignStmt(predR, rhs);
 			stmts.add(predicateElseAssignStmt);
-			// Process everything in the ELSE body with the current predicate set to the fresh variable
-			oldParentPredicate = parentPredicate;
+		}
+		
+		DeclRef oldParentPredicate = parentPredicate;
+		
+		// Process IF body with the current predicate set to Q
+		parentPredicate = predQ;
+		Stmt thenStmt = (Stmt) visit(ifStmt.getThenStmt());
+		stmts.add(thenStmt);
+		
+		// Process ELSE body with the current predicate set to R
+		if (hasElse) {
 			parentPredicate = predR;		
 			Stmt elseStmt = (Stmt) visit(ifStmt.getElseStmt());
 			stmts.add(elseStmt);
