@@ -34,6 +34,8 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		Expr loopCond = whileStmt.getCondition();
 		Stmt loopBody = whileStmt.getBody();
 		
+		List<Stmt> stmts = new LinkedList<Stmt>();
+		
 		// establish that invariant holds on loop entry
 		List<Stmt> loopInvariantAssertStmts = new LinkedList<Stmt>();
 		// add assert statement for every invariant
@@ -41,11 +43,11 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 			// 'based on' when creating assert stmt?
 			loopInvariantAssertStmts.add(new AssertStmt(e));
 		}
-		Stmt loopEntryAssertBlockStmt = (Stmt) new BlockStmt(loopInvariantAssertStmts);
+		stmts.addAll(loopInvariantAssertStmts);
 		
 		// teleport to arbitrary loop iteration satisfying invariants
 		DeclRef havocVar = (DeclRef) loopCond.getChildrenCopy().get(0); // TODO THIS WILL BREAK FOR SURE
-		Stmt havocStmt = new HavocStmt(havocVar); 
+		stmts.add(new HavocStmt(havocVar)); 
 		// generate assume statements for every invariant to cut off paths
 		// that do not satisfy invariant
 		List<Stmt> loopEntryAssumeStmts = new LinkedList<Stmt>();
@@ -53,25 +55,24 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 			// 'based on' when creating assert stmt?
 			loopEntryAssumeStmts.add(new AssumeStmt(e));
 		}
-		Stmt loopEntryAssumeBlockStmt = (Stmt)new BlockStmt(loopEntryAssumeStmts);
+		stmts.addAll(loopEntryAssumeStmts);
 		
 		// create if then body
-		List<Stmt> stmts = new LinkedList<Stmt>();
+		List<Stmt> ifStmtsBody = new LinkedList<Stmt>();
 		// visit loop body
-		stmts.add((Stmt) visit(loopBody));
+		ifStmtsBody.add((Stmt) visit(loopBody));
 		// insert assert statements to check that loop invariant holds at end of body
-		stmts.addAll(loopInvariantAssertStmts);
+		ifStmtsBody.addAll(loopInvariantAssertStmts);
 		// insert assume(false) statement to block further loop execution
-		stmts.add(new AssumeStmt(new IntLiteral(0))); // TODO false?
+		ifStmtsBody.add(new AssumeStmt(new IntLiteral(0))); // TODO false?
 		
-		StmtList stmtList = new StmtList(stmts);
-		BlockStmt newIfThenBody = new BlockStmt(stmtList);
+		BlockStmt newIfThenBody = new BlockStmt(ifStmtsBody);
 		// create complete if statement with loop condition
 		Stmt ifStmt = new IfStmt(loopCond, newIfThenBody, null);
 		
+		stmts.add(ifStmt);
 		
-		return new BlockStmt(new Stmt[] {loopEntryAssertBlockStmt, havocStmt, loopEntryAssumeBlockStmt, ifStmt},
-				/* basedOn= */whileStmt);
+		return new BlockStmt(stmts);
 	}
 
 }
