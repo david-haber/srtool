@@ -1,7 +1,6 @@
 package srt.tool;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -23,14 +22,15 @@ public class SMTLIBConverter {
 		// functions deﬁned in the Fixed_Size_BitVectors theory (but no other new sorts or functions).
 		
 		exprConverter = new ExprToSmtlibVisitor();
-		query = new StringBuilder("(set-logic QF_BV)\n" +
-				"(declare-sort Int 0)\n"+
-				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n" +
-				"(define-fun bv32tobool ((b  (_ BitVec 32))) (Bool) (= b (_ bv1 32) ))\n");
-		// TODO: Define more functions above (for convenience), as needed.
-
-		// TODO: Add constraints, add properties to check
-		// here.
+		
+		query = new StringBuilder();
+		// Define logic
+		query.append("(set-logic QF_BV)\n");
+		// Define sorts
+		query.append("(declare-sort Int 0)\n");
+		// Define functions
+		query.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
+		query.append("(define-fun bv32tobool ((b  (_ BitVec 32))) (Bool) (= b (_ bv1 32) ))\n");
 		
 		// Declare Variables
 		for (String var : variableNames) {
@@ -45,7 +45,6 @@ public class SMTLIBConverter {
 		}
 		
 		// Check that one of the assertion properties can fail
-		// TODO what if no properties?
 		
 		query.append(buildProperties(propertyExprs));
 		
@@ -97,20 +96,6 @@ public class SMTLIBConverter {
 			// get end of next line
 			endOfLine = rest.indexOf('\n');
 		}
-		
-//		int i = 0;
-//		int pos = queryResult.lastIndexOf("prop" + i);
-//		while (pos >= 0) {
-//			
-//			char c = queryResult.charAt(pos + 6); // TODO bad! only works if less than 10 assertions
-//			if (c == 't') {
-//				res.add(i);
-//			}
-//			
-//			// get next prop
-//			i++;
-//			pos = queryResult.lastIndexOf("prop" + i);
-//		}
 		
 		return res;
 	}
