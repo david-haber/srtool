@@ -61,6 +61,7 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		List<Stmt> ifStmtsBody = new LinkedList<Stmt>();
 		// visit loop body
 		ifStmtsBody.add((Stmt) visit(loopBody));
+		
 		// insert assert statements to check that loop invariant holds at end of body
 		ifStmtsBody.addAll(loopInvariantAssertStmts);
 		// insert assume(false) statement to block further loop execution
