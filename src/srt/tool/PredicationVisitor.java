@@ -55,43 +55,39 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(IfStmt ifStmt) {
-		// Get a fresh variable for this if condition
 		List<Stmt> stmts = new LinkedList<Stmt>();
 		Expr rhs;
-		
 		// Process IF-part of statement
-		DeclRef newPredicate;
-		newPredicate = new DeclRef(getFreshVariable(true));
+		DeclRef predQ = new DeclRef(getFreshVariable(true));
 		if (parentPredicate == null) {
 			rhs = ifStmt.getCondition();
 		} else {
 			rhs = new BinaryExpr(BinaryExpr.LAND, parentPredicate, ifStmt.getCondition());
 		}
-		AssignStmt predicateIfAssignStmt = new AssignStmt(newPredicate, rhs);
+		AssignStmt predicateIfAssignStmt = new AssignStmt(predQ, rhs);
 		stmts.add(predicateIfAssignStmt);
 		
 		// Process everything in the IF body with the current predicate set to the fresh variable
 		DeclRef oldParentPredicate = parentPredicate;
-		parentPredicate = newPredicate;
+		parentPredicate = predQ;
 		Stmt thenStmt = (Stmt) visit(ifStmt.getThenStmt());
 		stmts.add(thenStmt);
-		
 		
 		// Process ELSE-part of statement
 		if (ifStmt.getElseStmt() != null) {
 			// Create predicate with negated if-condition
 			parentPredicate = oldParentPredicate;
-			newPredicate = new DeclRef(getFreshVariable(true));
+			DeclRef predR = new DeclRef(getFreshVariable(true));
 			if (parentPredicate == null) {
 				rhs = new UnaryExpr(UnaryExpr.LNOT, ifStmt.getCondition());
 			} else {
 				rhs = new BinaryExpr(BinaryExpr.LAND, parentPredicate, new UnaryExpr(UnaryExpr.LNOT, ifStmt.getCondition()));
 			}
-			AssignStmt predicateElseAssignStmt = new AssignStmt(newPredicate, rhs);
+			AssignStmt predicateElseAssignStmt = new AssignStmt(predR, rhs);
 			stmts.add(predicateElseAssignStmt);
 			// Process everything in the ELSE body with the current predicate set to the fresh variable
 			oldParentPredicate = parentPredicate;
-			parentPredicate = newPredicate;		
+			parentPredicate = predR;		
 			Stmt elseStmt = (Stmt) visit(ifStmt.getElseStmt());
 			stmts.add(elseStmt);
 		}
