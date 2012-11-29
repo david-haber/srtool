@@ -2,9 +2,9 @@ package srt.tool;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import srt.ast.AssertStmt;
-import srt.ast.AssignStmt;
 import srt.ast.AssumeStmt;
 import srt.ast.BlockStmt;
 import srt.ast.DeclRef;
@@ -14,8 +14,6 @@ import srt.ast.HavocStmt;
 import srt.ast.IfStmt;
 import srt.ast.IntLiteral;
 import srt.ast.Stmt;
-import srt.ast.StmtList;
-import srt.ast.TernaryExpr;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
 
@@ -46,8 +44,14 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		stmts.addAll(loopInvariantAssertStmts);
 		
 		// teleport to arbitrary loop iteration satisfying invariants
-		DeclRef havocVar = (DeclRef) loopCond.getChildrenCopy().get(0); // TODO THIS WILL BREAK FOR SURE
-		stmts.add(new HavocStmt(havocVar)); 
+		// get modset for loop body
+		ModSetVisitor modSetVisitor = new ModSetVisitor();
+		modSetVisitor.visit(whileStmt.getBody());
+		Set<DeclRef> modSet = modSetVisitor.getModSet();
+		for (DeclRef var : modSet) {
+			stmts.add(new HavocStmt(var));
+		}
+		
 		// generate assume statements for every invariant to cut off paths
 		// that do not satisfy invariant
 		List<Stmt> loopEntryAssumeStmts = new LinkedList<Stmt>();
