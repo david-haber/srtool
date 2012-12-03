@@ -1,6 +1,2 @@
-- optimizing redundant instructions
-- BlockStmt, is there an alternative?
-- Implies?
-- Predicates as bools or bvs?
-- Error message when getting values for properties
-- bv32 function
+- Predicates as bools or bvs? <--YES
+- Test Cases!! <- Write lots of your own
