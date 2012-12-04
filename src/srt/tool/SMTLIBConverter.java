@@ -33,13 +33,23 @@ public class SMTLIBConverter {
 		
 		// Declare Variables
 		for (String var : variableNames) {
-			String line = "(declare-fun " + var + " () (_ BitVec 32))\n";
+			String line;
+			if (isPredicate(var)) {
+				// predicate
+				line = "(declare-fun " + var + " () (Bool))\n";
+			} else {
+				// variable
+				line = "(declare-fun " + var + " () (_ BitVec 32))\n";
+			}
 			query.append(line);
 		}
 		
+		// Make global predicate true
+		//query.append("(assert (= G$1 (bv32tobool (_ bv1 32))))\n");
+		
 		// Add constraints
 		for (Expr e : transitionExprs) {
-			String line = "(assert (bv32tobool "+exprConverter.visit(e) + "))\n";
+			String line = "(assert "+exprConverter.visit(e) + ")\n";
 			query.append(line);
 		}
 		
@@ -112,10 +122,9 @@ public class SMTLIBConverter {
 		}
 		
 		for (int i=0; i < propertyExprs.size(); i++) {
-			props += "(assert  (= prop" + i + " (not (bv32tobool " + 
+			props += "(assert  (= prop" + i + " (not (" + 
 					exprConverter.visit(propertyExprs.get(i)) +"))))\n";
 		}
-		
 		
 		props += "(assert (or ";
 		for (int i=0; i < propertyExprs.size(); i++) {
@@ -147,6 +156,8 @@ public class SMTLIBConverter {
 		return line;
 	}
 	
-	
+	private boolean isPredicate(String variableName) {
+		return variableName.charAt(0) == '$';
+	}
 	
 }

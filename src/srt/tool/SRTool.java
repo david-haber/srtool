@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.Tree;
-
 import srt.ast.Node;
 import srt.ast.Program;
 import srt.ast.visitor.impl.Checker;
@@ -86,7 +84,7 @@ public class SRTool {
 		if (queryResult == null) {
 			throw new SMTSolverTimeoutException("Timeout!");
 		}
-//		System.out.println(queryResult);
+		System.out.println(queryResult);
 
 		// Return the assertions that can be violated.
 		if (queryResult.startsWith("sat")) {

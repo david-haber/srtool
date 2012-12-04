@@ -32,7 +32,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(bvxor %s %s)";
 				break;
 			case BinaryExpr.DIVIDE:
-				// TODO assumes two's complement signed division
+				// assumes two's complement signed division
 				operator = "(bvsdiv %s %s)";
 				break;
 			case BinaryExpr.LSHIFT:
@@ -54,31 +54,28 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(bvsub %s %s)";
 				break;
 			case BinaryExpr.LAND:
-				// (and (bv32tobool (tobv32 (= i j))) (and (bv32tobool (tobv32 (= j i))) ))))
-				operator = "(tobv32 (and (bv32tobool %s) (bv32tobool %s)))";
+				operator = "(and (%s) (%s))";
 				break;
 			case BinaryExpr.LOR:
-				operator = "(tobv32 (or (bv32tobool %s) (bv32tobool %s)))";
+				operator = "(or (%s) (%s))";
 				break;
 			case BinaryExpr.GEQ:
-				// TODO FOR ALL comparison operators: assume based on 32 bvs, also: Z3_ast Z3_API Z3_mk_ge
-				// TODO is there a better way than converting to bv and then back to bool?
-				operator = "(tobv32 (bvsge %s %s))";
+				operator = "(bvsge %s %s)";
 				break;
 			case BinaryExpr.GT:
-				operator = "(tobv32 (bvsgt %s %s))";
+				operator = "(bvsgt %s %s)";
 				break;
 			case BinaryExpr.LEQ:
-				operator = "(tobv32 (bvsle %s %s))";
+				operator = "(bvsle %s %s)";
 				break;
 			case BinaryExpr.LT:
-				operator = "(tobv32 (bvslt %s %s))";
+				operator = "(bvslt %s %s)";
 				break;
 			case BinaryExpr.NEQUAL:
-				operator = "(tobv32 (not (= %s %s)))";
+				operator = "(not (= %s %s))";
 				break;
 			case BinaryExpr.EQUAL:
-				operator = "(tobv32 (= %s %s))";
+				operator = "(= %s %s)";
 				break;
 			default:
 				throw new IllegalArgumentException("Invalid binary operator");
@@ -102,12 +99,13 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 	@Override
 	public String visit(TernaryExpr ternaryExpr) {
 	
-		String ret = "(ite (bv32tobool %s) %s %s)";
+		String ret = "(ite (%s) %s %s)";
 		
 		return String.format(ret, visit(ternaryExpr.getCondition()), 
 				visit(ternaryExpr.getTrueExpr()), visit(ternaryExpr.getFalseExpr()));
 	}
 
+	
 	@Override
 	public String visit(UnaryExpr unaryExpr) {
 		String operator = null;
@@ -122,7 +120,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 			operator = "";
 			break;
 		case UnaryExpr.LNOT:
-			operator = "(tobv32 (not (bv32tobool %s)))";
+			operator = "(not (%s))";
 			break;
 		case UnaryExpr.BNOT:
 			operator = "(bvnot %s)";

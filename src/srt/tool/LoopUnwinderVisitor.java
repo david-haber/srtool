@@ -15,7 +15,6 @@ import srt.ast.Stmt;
 import srt.ast.UnaryExpr;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
-import srt.parser.SimpleCParser.whileStatement_return;
 
 public class LoopUnwinderVisitor extends DefaultVisitor {
 
@@ -31,7 +30,8 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
-		int bounds = (whileStmt.getBound() == null) ? defaultUnwindBound : whileStmt.getBound().getValue();
+		int bounds = (whileStmt.getBound() == null) ? 
+				defaultUnwindBound : whileStmt.getBound().getValue();
 		List<Stmt> stmts = new LinkedList<Stmt>();
 		Expr condition = whileStmt.getCondition();
 		if (bounds == 0) {
@@ -50,7 +50,8 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		}
 		List<Stmt> ifStmtBody = new LinkedList<Stmt>();
 		ifStmtBody.add((Stmt) this.visit(whileStmt.getBody()));
-		WhileStmt innerStmt = new WhileStmt(whileStmt.getCondition(), new IntLiteral(bounds-1), whileStmt.getInvariantList(), whileStmt.getBody());
+		WhileStmt innerStmt = new WhileStmt(whileStmt.getCondition(), 
+				new IntLiteral(bounds-1), whileStmt.getInvariantList(), whileStmt.getBody());
 		ifStmtBody.add((Stmt) visit(innerStmt));
 		stmts.add(new IfStmt(condition, new BlockStmt(ifStmtBody), new EmptyStmt()));
 		return new BlockStmt(stmts);

@@ -1,4 +1,7 @@
 package srt.tool;
+/**
+ * Used to collect modset (e.g. in LoopAbstractionVisitor)
+ */
 
 import java.util.HashSet;
 import java.util.Set;

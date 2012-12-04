@@ -26,7 +26,7 @@ public class PredicationVisitor extends DefaultVisitor {
 
 	private DeclRef parentPredicate;
 
-	private DeclRef globalPredicate;
+	private final DeclRef globalPredicate;
 	private final String globalPredicateName;
 
 	public PredicationVisitor() {
@@ -42,13 +42,17 @@ public class PredicationVisitor extends DefaultVisitor {
 	 * @return a fresh variable that has not been used before
 	 */
 	private String getFreshVariable(boolean isPredicate) {
-		String result = (isPredicate) ? "$"+ freshVariableSeed : freshVariableSeed;
+		String result = (isPredicate) ? "$" + freshVariableSeed : freshVariableSeed;
 		if (freshVariableSeed.charAt(freshVariableSeed.length()-1) == 'Z') {
 			freshVariableSeed.concat("A");
 		} else {
 			char lastChar = freshVariableSeed.charAt(freshVariableSeed.length()-1);
+			char newChar = (char) (lastChar+1);
+			if (newChar == 'G') {
+				newChar = (char) (newChar + 1);
+			}
 			freshVariableSeed = freshVariableSeed.substring(0, freshVariableSeed.length()-1);
-			freshVariableSeed += (char) (lastChar+1);
+			freshVariableSeed += newChar;
 		}
 		return result;
 	}
@@ -105,7 +109,7 @@ public class PredicationVisitor extends DefaultVisitor {
 	public Object visit(Program program) {
 		// Declare a global variable G that is set to 1 (represents true)
 		Stmt declStmt = new Decl(globalPredicateName, "int");
-		Stmt assignStmt = new AssignStmt(new DeclRef(globalPredicateName), new IntLiteral(1));
+		Stmt assignStmt = new AssignStmt(new DeclRef(globalPredicateName), new BinaryExpr(BinaryExpr.EQUAL, new IntLiteral(1), new IntLiteral(1)));
 		Stmt oldBlock = (Stmt) visit(program.getBlockStmt());
 		BlockStmt newBlock = new BlockStmt(new Stmt[] {declStmt, assignStmt, oldBlock});
 		return new Program(program.getFunctionName(), program.getDeclList(), newBlock);

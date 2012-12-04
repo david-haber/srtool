@@ -10,21 +10,12 @@ import srt.ast.Expr;
 import srt.ast.visitor.impl.DefaultVisitor;
 
 public class SSAVisitor extends DefaultVisitor {
+	
 	// Contains a mapping between a variable and its latest value
 	private Map<String, Integer> index = new HashMap<String, Integer>();
 
 	public SSAVisitor() {
 		super(true);
-	}
-	
-	private String getSSAName(String name) {
-		Integer i = index.get(name);
-		return name+"$"+i;
-	}
-	
-	private void incrementSSAIndex(String name) {
-		Integer oldI = index.get(name);
-		index.put(name, oldI+1);
 	}
 	
 	@Override
@@ -48,12 +39,22 @@ public class SSAVisitor extends DefaultVisitor {
 	public Object visit(AssignStmt assignment) {
 		Expr rhs = (Expr) this.visit(assignment.getRhs());
 		String oldName = assignment.getLhs().getName();
-		if (oldName.charAt(0) != '$') {
+		if (oldName.charAt(0) != '$' || (oldName.length() > 1 && oldName.charAt(1) == 'G')) {
 			incrementSSAIndex(oldName);
 		}
 		DeclRef lhs = (DeclRef) this.visit(assignment.getLhs());
 		return new AssignStmt(lhs,rhs,assignment);
-		//return super.visit(new AssignStmt(lhs,rhs,assignment));
+	}
+	
+	
+	private String getSSAName(String name) {
+		Integer i = index.get(name);
+		return name+"$"+i;
+	}
+	
+	private void incrementSSAIndex(String name) {
+		Integer oldI = index.get(name);
+		index.put(name, oldI+1);
 	}
 
 }
