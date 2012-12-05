@@ -17,6 +17,11 @@ public class SSAVisitor extends DefaultVisitor {
 		super(true);
 	}
 	
+	/**
+	 * 
+	 * @param name 
+	 * @return the correct name of the given variable name after SSA
+	 */
 	private String getSSAName(String name) {
 		Integer i = index.get(name);
 		return name+"$"+i;
@@ -27,7 +32,13 @@ public class SSAVisitor extends DefaultVisitor {
 		index.put(name, oldI+1);
 	}
 	
+
 	@Override
+	/**
+	 * Registers a variable for SSA renaming
+	 * @param delc
+	 * @return a new decl statement with SSA renaming applied
+	 */
 	public Object visit(Decl decl) {
 		String name = decl.getName();
 		index.put(name, 0);
@@ -35,8 +46,13 @@ public class SSAVisitor extends DefaultVisitor {
 	}
 	
 	@Override
+	/**
+	 * @return the declRef updated with its correct SSA 
+	 * 	name (if declRef is not a predicate)
+	 */
 	public Object visit(DeclRef declRef) {
 		String name = declRef.getName();
+		// We only apply SSA to non-predicates
 		if (name.charAt(0) == '$') {
 			return declRef;
 		} else {
@@ -49,6 +65,7 @@ public class SSAVisitor extends DefaultVisitor {
 		Expr rhs = (Expr) this.visit(assignment.getRhs());
 		String oldName = assignment.getLhs().getName();
 		if (oldName.charAt(0) != '$') {
+			// Update the internal index value for the variable
 			incrementSSAIndex(oldName);
 		}
 		DeclRef lhs = (DeclRef) this.visit(assignment.getLhs());
