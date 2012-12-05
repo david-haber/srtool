@@ -31,7 +31,7 @@ public class SSAVisitor extends DefaultVisitor {
 	public Object visit(Decl decl) {
 		String name = decl.getName();
 		index.put(name, 0);
-		return super.visit(new Decl(getSSAName(name), decl.getType(), decl));
+		return new Decl(getSSAName(name), decl.getType(), decl);
 	}
 	
 	@Override
@@ -53,7 +53,6 @@ public class SSAVisitor extends DefaultVisitor {
 		}
 		DeclRef lhs = (DeclRef) this.visit(assignment.getLhs());
 		return new AssignStmt(lhs,rhs,assignment);
-		//return super.visit(new AssignStmt(lhs,rhs,assignment));
 	}
 
 }

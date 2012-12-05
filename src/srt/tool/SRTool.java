@@ -86,7 +86,7 @@ public class SRTool {
 		if (queryResult == null) {
 			throw new SMTSolverTimeoutException("Timeout!");
 		}
-//		System.out.println(queryResult);
+		System.out.println(queryResult);
 
 		// Return the assertions that can be violated.
 		if (queryResult.startsWith("sat")) {
@@ -98,7 +98,7 @@ public class SRTool {
 			// For now:
 			for (Integer i : indexesFailed) {
 				Node exp = ccv.propertyNodes.get(i);
-				if (exp != null && exp.getTokenInfo() != null) {
+				if (exp != null) {
 					result.add(new AssertionFailure(exp.getTokenInfo()));
 				}
 			}

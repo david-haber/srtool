@@ -36,24 +36,24 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 		Expr condition = whileStmt.getCondition();
 		if (bounds == 0) {
 			if (unwindingAssertions) {
-				stmts.add(new AssertStmt(new UnaryExpr(UnaryExpr.LNOT, condition)));
+				stmts.add(new AssertStmt(new UnaryExpr(UnaryExpr.LNOT, condition), condition));
 			}
-			stmts.add(new AssumeStmt(new UnaryExpr(UnaryExpr.LNOT, condition)));
-			return new BlockStmt(stmts);
+			stmts.add(new AssumeStmt(new UnaryExpr(UnaryExpr.LNOT, condition), condition));
+			return new BlockStmt(stmts, whileStmt);
 		}
 		ExprList invariants = whileStmt.getInvariantList();
 		if (invariants != null) {
 			List<Expr> invariantsList = invariants.getExprs();
 			for (Expr e : invariantsList) {
-				stmts.add(new AssertStmt(e));
+				stmts.add(new AssertStmt(e, e));
 			}
 		}
 		List<Stmt> ifStmtBody = new LinkedList<Stmt>();
 		ifStmtBody.add((Stmt) this.visit(whileStmt.getBody()));
-		WhileStmt innerStmt = new WhileStmt(whileStmt.getCondition(), new IntLiteral(bounds-1), whileStmt.getInvariantList(), whileStmt.getBody());
+		WhileStmt innerStmt = new WhileStmt(whileStmt.getCondition(), new IntLiteral(bounds-1), whileStmt.getInvariantList(), whileStmt.getBody(), whileStmt);
 		ifStmtBody.add((Stmt) visit(innerStmt));
 		stmts.add(new IfStmt(condition, new BlockStmt(ifStmtBody), new EmptyStmt()));
-		return new BlockStmt(stmts);
+		return new BlockStmt(stmts, whileStmt);
 	}
 
 }
