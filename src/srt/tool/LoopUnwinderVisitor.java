@@ -30,16 +30,21 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 
 	@Override
 	public Object visit(WhileStmt whileStmt) {
+		// Set number of bounds to unwind
 		int bounds = (whileStmt.getBound() == null) ? defaultUnwindBound : whileStmt.getBound().getValue();
+		// Initialise the list of statements to return
 		List<Stmt> stmts = new LinkedList<Stmt>();
-		Expr condition = whileStmt.getCondition();
+		Expr whileCond = whileStmt.getCondition();
+		// Base case for zero unwinds
 		if (bounds == 0) {
 			if (unwindingAssertions) {
-				stmts.add(new AssertStmt(new UnaryExpr(UnaryExpr.LNOT, condition), condition));
+				stmts.add(new AssertStmt(new UnaryExpr(UnaryExpr.LNOT, whileCond), whileCond));
 			}
-			stmts.add(new AssumeStmt(new UnaryExpr(UnaryExpr.LNOT, condition), condition));
+			stmts.add(new AssumeStmt(new UnaryExpr(UnaryExpr.LNOT, whileCond), whileCond));
 			return new BlockStmt(stmts, whileStmt);
 		}
+		// For all other cases
+		// Process the invariants
 		ExprList invariants = whileStmt.getInvariantList();
 		if (invariants != null) {
 			List<Expr> invariantsList = invariants.getExprs();
@@ -48,10 +53,14 @@ public class LoopUnwinderVisitor extends DefaultVisitor {
 			}
 		}
 		List<Stmt> ifStmtBody = new LinkedList<Stmt>();
+		// Visit the body of the loop once
 		ifStmtBody.add((Stmt) this.visit(whileStmt.getBody()));
+		// Recursively visit the while statement now inside the if statement
 		WhileStmt innerStmt = new WhileStmt(whileStmt.getCondition(), new IntLiteral(bounds-1), whileStmt.getInvariantList(), whileStmt.getBody(), whileStmt);
 		ifStmtBody.add((Stmt) visit(innerStmt));
-		stmts.add(new IfStmt(condition, new BlockStmt(ifStmtBody), new EmptyStmt()));
+		// Replace the while loop with its if statement replacement
+		stmts.add(new IfStmt(whileCond, new BlockStmt(ifStmtBody), new EmptyStmt()));
+		// Return stmts as a block statement
 		return new BlockStmt(stmts, whileStmt);
 	}
 
