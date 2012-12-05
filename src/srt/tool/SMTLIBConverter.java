@@ -20,15 +20,15 @@ public class SMTLIBConverter {
 		
 
 		exprConverter = new ExprToSmtlibVisitor();
-		query = new StringBuilder();
-		
+
+		query = new StringBuilder();		
 		// Declare logic
 		query.append("(set-logic QF_BV)\n");
 		// Declare new sorts
 		query.append("(declare-sort Int 0)\n");
 		// Declare functions
 		query.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
-		query.append("(define-fun bv32tobool ((b  (_ BitVec 32))) (Bool) (not (= b (_ bv0 32) )))\n");
+		query.append("(define-fun tobool ((b  (_ BitVec 32))) (Bool) (not (= b (_ bv0 32) )))\n");
 		
 		// Declare Variables
 		for (String var : variableNames) {
@@ -38,7 +38,7 @@ public class SMTLIBConverter {
 		
 		// Add constraints
 		for (Expr e : transitionExprs) {
-			String line = "(assert (bv32tobool "+exprConverter.visit(e) + "))\n";
+			String line = "(assert (tobool "+exprConverter.visit(e) + "))\n";
 			query.append(line);
 		}
 		
@@ -110,7 +110,7 @@ public class SMTLIBConverter {
 		}
 		
 		for (int i=0; i < propertyExprs.size(); i++) {
-			props += "(assert  (= prop" + i + " (not (bv32tobool " + 
+			props += "(assert  (= prop" + i + " (not (tobool " + 
 					exprConverter.visit(propertyExprs.get(i)) +"))))\n";
 		}
 		
