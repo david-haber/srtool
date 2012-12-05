@@ -18,14 +18,17 @@ public class SMTLIBConverter {
 			throw new IllegalArgumentException("No assertions.");
 		}
 		
-		// QF_BV allows quantiﬁer-free expressions, including the family of bit-vector sorts and all of the
-		// functions deﬁned in the Fixed_Size_BitVectors theory (but no other new sorts or functions).
-		
+
 		exprConverter = new ExprToSmtlibVisitor();
-		query = new StringBuilder("(set-logic QF_BV)\n" +
-				"(declare-sort Int 0)\n"+
-				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n" +
-				"(define-fun tobool ((b  (_ BitVec 32))) (Bool) (not (= b (_ bv0 32) )))\n");
+
+		query = new StringBuilder();		
+		// Declare logic
+		query.append("(set-logic QF_BV)\n");
+		// Declare new sorts
+		query.append("(declare-sort Int 0)\n");
+		// Declare functions
+		query.append("(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n");
+		query.append("(define-fun tobool ((b  (_ BitVec 32))) (Bool) (not (= b (_ bv0 32) )))\n");
 		
 		// Declare Variables
 		for (String var : variableNames) {
@@ -40,7 +43,6 @@ public class SMTLIBConverter {
 		}
 		
 		// Check that one of the assertion properties can fail
-		
 		query.append(buildProperties(propertyExprs));
 		
 		query.append("(check-sat)\n");
@@ -117,7 +119,7 @@ public class SMTLIBConverter {
 		for (int i=0; i < propertyExprs.size(); i++) {
 			props += "prop" + i + " ";	
 		}
-		props = props.trim() + ("))\n"); // performance
+		props = props.trim() + ("))\n");
 		
 		return props;
 
@@ -138,7 +140,7 @@ public class SMTLIBConverter {
 				line += "prop"+i+" ";
 			}
 			
-			line = line.trim() + "))\n"; // not really cool for performance, looks nicer though
+			line = line.trim() + "))\n";
 		}
 		return line;
 	}
