@@ -71,8 +71,8 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		// insert assume(false) statement to block further loop execution
 		ifStmtsBody.add(new AssumeStmt(new IntLiteral(0)));
 		
-		BlockStmt newIfThenBody = new BlockStmt(ifStmtsBody);
 		// create complete if statement with loop condition
+		BlockStmt newIfThenBody = new BlockStmt(ifStmtsBody);
 		Stmt ifStmt = new IfStmt(loopCond, newIfThenBody, null);
 		
 		stmts.add(ifStmt);
