@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.antlr.runtime.RecognitionException;
-import org.antlr.runtime.tree.Tree;
-
 import srt.ast.Node;
 import srt.ast.Program;
 import srt.ast.visitor.impl.Checker;
@@ -51,7 +49,6 @@ public class SRTool {
 			throw new CheckerExpception(checker.getCheckerError());
 		}
 
-		// TODO: Transform program using Visitors here.
 		if (clArgs.abstractLoops) {
 			p = (Program) new LoopAbstractionVisitor().visit(p);
 		} else {
@@ -75,7 +72,6 @@ public class SRTool {
 			return result;
 		}
 
-		// TODO: Section 4: Convert constraints to SMTLIB String.
 		SMTLIBConverter converter = new SMTLIBConverter(ccv.variableNames,
 				ccv.transitionExprs, ccv.propertyExprs);
 		String smtQuery = converter.getQuery();
@@ -86,16 +82,13 @@ public class SRTool {
 		if (queryResult == null) {
 			throw new SMTSolverTimeoutException("Timeout!");
 		}
-		System.out.println(queryResult);
+		//System.out.println(queryResult);
 
 		// Return the assertions that can be violated.
 		if (queryResult.startsWith("sat")) {
 			List<Integer> indexesFailed = converter
 					.getPropertiesThatFailed(queryResult);
 
-			// TODO: Use "indexesFailed" after implementing
-			// "getPropertiesThatFailed".
-			// For now:
 			for (Integer i : indexesFailed) {
 				Node exp = ccv.propertyNodes.get(i);
 				if (exp != null) {

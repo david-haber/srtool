@@ -69,7 +69,7 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		// insert assert statements to check that loop invariant holds at end of body
 		ifStmtsBody.addAll(loopInvariantAssertStmts);
 		// insert assume(false) statement to block further loop execution
-		ifStmtsBody.add(new AssumeStmt(new IntLiteral(0))); // TODO false?
+		ifStmtsBody.add(new AssumeStmt(new IntLiteral(0)));
 		
 		BlockStmt newIfThenBody = new BlockStmt(ifStmtsBody);
 		// create complete if statement with loop condition
