@@ -77,7 +77,7 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		
 		stmts.add(ifStmt);
 		
-		return new BlockStmt(stmts);
+		return new BlockStmt(stmts, whileStmt);
 	}
 
 }

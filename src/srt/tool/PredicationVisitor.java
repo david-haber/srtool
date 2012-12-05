@@ -98,7 +98,7 @@ public class PredicationVisitor extends DefaultVisitor {
 		
 		// Restore the original predicate for the scope
 		parentPredicate = oldParentPredicate;
-		return new BlockStmt(stmts);
+		return new BlockStmt(stmts, ifStmt);
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class PredicationVisitor extends DefaultVisitor {
 		Stmt assignStmt = new AssignStmt(new DeclRef(globalPredicateName), new IntLiteral(1));
 		Stmt oldBlock = (Stmt) visit(program.getBlockStmt());
 		BlockStmt newBlock = new BlockStmt(new Stmt[] {declStmt, assignStmt, oldBlock});
-		return new Program(program.getFunctionName(), program.getDeclList(), newBlock);
+		return new Program(program.getFunctionName(), program.getDeclList(), newBlock, program);
 	}
 
 	@Override
@@ -124,7 +124,7 @@ public class PredicationVisitor extends DefaultVisitor {
 		// x = (G && P) ? E : x;
 		Expr condition = getGuard();
 		Expr e = new TernaryExpr(condition, assignment.getRhs(), assignment.getLhs());
-		return new AssignStmt(assignment.getLhs(), e);
+		return new AssignStmt(assignment.getLhs(), e, assignment);
 	}
 
 	@Override
