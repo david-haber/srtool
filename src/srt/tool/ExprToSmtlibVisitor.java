@@ -32,7 +32,6 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(bvxor %s %s)";
 				break;
 			case BinaryExpr.DIVIDE:
-				// TODO assumes two's complement signed division
 				operator = "(bvsdiv %s %s)";
 				break;
 			case BinaryExpr.LSHIFT:
@@ -61,8 +60,6 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 				operator = "(tobv32 (or (tobool %s) (tobool %s)))";
 				break;
 			case BinaryExpr.GEQ:
-				// TODO FOR ALL comparison operators: assume based on 32 bvs, also: Z3_ast Z3_API Z3_mk_ge
-				// TODO is there a better way than converting to bv and then back to bool?
 				operator = "(tobv32 (bvsge %s %s))";
 				break;
 			case BinaryExpr.GT:
@@ -117,9 +114,7 @@ public class ExprToSmtlibVisitor extends DefaultVisitor {
 			operator = "(bvneg %s)";
 			break;
 		case UnaryExpr.UPLUS:
-			// TODO ?
-			// +3 = 3
-			operator = "";
+			operator = "(%s)";
 			break;
 		case UnaryExpr.LNOT:
 			operator = "(tobv32 (not (tobool %s)))";

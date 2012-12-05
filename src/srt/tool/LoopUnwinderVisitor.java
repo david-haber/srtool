@@ -15,7 +15,6 @@ import srt.ast.Stmt;
 import srt.ast.UnaryExpr;
 import srt.ast.WhileStmt;
 import srt.ast.visitor.impl.DefaultVisitor;
-import srt.parser.SimpleCParser.whileStatement_return;
 
 public class LoopUnwinderVisitor extends DefaultVisitor {
 

@@ -26,10 +26,6 @@ public class SMTLIBConverter {
 				"(declare-sort Int 0)\n"+
 				"(define-fun tobv32 ((p Bool)) (_ BitVec 32) (ite p (_ bv1 32) (_ bv0 32)))\n" +
 				"(define-fun tobool ((b  (_ BitVec 32))) (Bool) (not (= b (_ bv0 32) )))\n");
-		// TODO: Define more functions above (for convenience), as needed.
-
-		// TODO: Add constraints, add properties to check
-		// here.
 		
 		// Declare Variables
 		for (String var : variableNames) {
