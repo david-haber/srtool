@@ -39,7 +39,7 @@ public class LoopAbstractionVisitor extends DefaultVisitor {
 		// add assert statement for every invariant
 		for (Expr e : loopInvariantExprs) {
 			// 'based on' when creating assert stmt?
-			loopInvariantAssertStmts.add(new AssertStmt(e));
+			loopInvariantAssertStmts.add(new AssertStmt(e, e));
 		}
 		stmts.addAll(loopInvariantAssertStmts);
 		
