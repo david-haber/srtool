@@ -42,14 +42,14 @@ public class PredicationVisitor extends DefaultVisitor {
 	 * @return a fresh variable that has not been used before
 	 */
 	private String getFreshVariable(boolean isPredicate) {
-		String result = (isPredicate) ? "$"+ freshVariableSeed : freshVariableSeed;
 		if (freshVariableSeed.charAt(freshVariableSeed.length()-1) == 'Z') {
-			freshVariableSeed.concat("A");
+			freshVariableSeed += "A";
 		} else {
 			char lastChar = freshVariableSeed.charAt(freshVariableSeed.length()-1);
 			freshVariableSeed = freshVariableSeed.substring(0, freshVariableSeed.length()-1);
 			freshVariableSeed += (char) (lastChar+1);
 		}
+		String result = (isPredicate) ? "$"+ freshVariableSeed : freshVariableSeed;
 		return result;
 	}
 
